@@ -42,6 +42,7 @@ class KotlinJpsBuildTestIncremental : KotlinJpsBuildTest() {
 
     fun testKotlinJavaScriptChangePackage() {
         initProject(LibraryDependency.JS_STDLIB)
+        setupKotlinJSFacet()
         buildAllModules().assertSuccessful()
 
         val class2Kt = File(workDir, "src/Class2.kt")
