@@ -241,14 +241,24 @@ fun argumentsWithVarargAsSingleArray(
         concatElements.add(JsArrayLiteral(arraysForConcat))
     }
 
-    return when (concatElements.size) {
-        0 -> JsArrayLiteral()
-        1 -> concatElements[0]
-        else -> JsInvocation(
-            JsNameRef("concat", concatElements.first()),
-            concatElements.drop(1)
-        )
+    if (concatElements.isEmpty()) {
+        return JsArrayLiteral()
     }
+
+    if (concatElements.all { it is JsArrayLiteral }) {
+        return concatElements
+            .fold(mutableListOf<JsExpression>()) { aggregatedArrayExpressions, arrayLiteral ->
+                arrayLiteral as JsArrayLiteral
+                aggregatedArrayExpressions.addAll(arrayLiteral.expressions)
+                aggregatedArrayExpressions
+            }
+            .let { JsArrayLiteral(it) }
+    }
+
+    return JsInvocation(
+        JsNameRef("concat", concatElements.first()),
+        concatElements.drop(1)
+    )
 }
 
 fun IrFunction.varargParameterIndex() = valueParameters.indexOfFirst { it.varargElementType != null }
